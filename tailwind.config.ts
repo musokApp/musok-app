@@ -8,6 +8,13 @@ export default {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    container: {
+      center: true,
+      padding: "1rem",
+      screens: {
+        "2xl": "1360px",
+      },
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -49,38 +56,10 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        sans: ["Noto Sans KR", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
     },
   },
-  plugins: [require("daisyui")],
-  daisyui: {
-    themes: [
-      {
-        mystic: {
-          "primary": "#a855f7",          // purple-500
-          "secondary": "#ec4899",        // pink-500
-          "accent": "#3b82f6",           // blue-500
-          "neutral": "#1f2937",          // gray-800
-          "base-100": "#ffffff",         // white
-          "base-200": "#f9fafb",         // gray-50
-          "base-300": "#f3f4f6",         // gray-100
-          "info": "#3b82f6",             // blue-500
-          "success": "#10b981",          // green-500
-          "warning": "#f59e0b",          // amber-500
-          "error": "#ef4444",            // red-500
-        },
-      },
-      "light",
-      "dark",
-      "cupcake",
-      "synthwave",
-      "valentine",
-    ],
-    darkTheme: "dark",
-    base: true,
-    styled: true,
-    utils: true,
-    prefix: "",
-    logs: true,
-    themeRoot: ":root",
-  },
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;

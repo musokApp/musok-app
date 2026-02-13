@@ -32,16 +32,16 @@
 ### Frontend
 - **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui
-- **State Management**: Zustand + TanStack Query
-- **Form**: React Hook Form + Zod
+- **Styling**: Tailwind CSS (순수 Tailwind, DaisyUI 제거됨)
+- **State Management**: Zustand
+- **Font**: Noto Sans KR (Google Fonts)
 
 ### Backend
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Realtime**: Supabase Realtime
-- **Storage**: Supabase Storage
-- **Functions**: Supabase Edge Functions
+- **Database**: Supabase (PostgreSQL) - 현재 더미 데이터 사용
+- **Authentication**: JWT 기반 (bcryptjs + HTTP-only Cookie)
+- **Realtime**: Supabase Realtime (예정)
+- **Storage**: Supabase Storage (예정)
+- **Functions**: Supabase Edge Functions (예정)
 
 ### Hybrid App
 - **Wrapper**: Capacitor 6
@@ -116,15 +116,21 @@ npm start
 ## 🗓️ 개발 로드맵
 
 - [x] **Phase 1**: 프로젝트 초기화 ✅
-- [ ] **Phase 2**: 인증 시스템
-- [ ] **Phase 3**: 무속인 관리
-- [ ] **Phase 4**: 예약 시스템
-- [ ] **Phase 5**: 결제 통합
-- [ ] **Phase 6**: 실시간 채팅
-- [ ] **Phase 7**: 후기 시스템
-- [ ] **Phase 8**: Capacitor 통합
-- [ ] **Phase 9**: 푸시 알림
-- [ ] **Phase 10**: 관리자 페이지
+- [x] **Phase 2**: 인증 시스템 ✅ — JWT 로그인/회원가입/로그아웃, 테스트 계정 3종
+- [x] **Phase 3**: 무속인 관리 ✅ — 프로필 등록, 검색/필터, 관리자 승인 (더미 데이터)
+- [x] **UI/UX 리디자인** ✅ — 야놀자 스타일 순수 Tailwind, 모바일 WebView 대응
+- [ ] **Phase 4**: 예약 시스템 👈 다음 단계
+  - 예약 타입/모델 정의
+  - 예약 생성/취소 API
+  - 날짜/시간 선택 UI
+  - 예약 목록 및 상태 관리
+  - 무속인 측 예약 승인/거절
+- [ ] **Phase 5**: 결제 통합 — 토스페이먼츠, 카카오페이
+- [ ] **Phase 6**: 실시간 채팅 — Supabase Realtime
+- [ ] **Phase 7**: 후기 시스템 — 별점/텍스트 리뷰, 사진 첨부
+- [ ] **Phase 8**: Capacitor 통합 — iOS/Android 하이브리드 앱
+- [ ] **Phase 9**: 푸시 알림 — FCM/APNs
+- [ ] **Phase 10**: 관리자 페이지 — 대시보드, 사용자 관리, 신고 처리 (현재 무속인 승인만 구현)
 - [ ] **Phase 11**: 테스트 & 최적화
 - [ ] **Phase 12**: 배포
 

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { ShamanProfile } from '@/types/shaman.types';
-import { MapPin, Star, Sparkles } from 'lucide-react';
+import { MapPin, Star } from 'lucide-react';
 
 interface ShamanCardProps {
   shaman: ShamanProfile;
@@ -8,8 +8,12 @@ interface ShamanCardProps {
 
 export function ShamanCard({ shaman }: ShamanCardProps) {
   return (
-    <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 image-full">
-      <figure className="relative h-64">
+    <Link
+      href={`/shamans/${shaman.id}`}
+      className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+    >
+      {/* Image */}
+      <div className="relative h-48 bg-gray-100">
         {shaman.images[0] ? (
           <img
             src={shaman.images[0]}
@@ -17,60 +21,54 @@ export function ShamanCard({ shaman }: ShamanCardProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary via-secondary to-accent">
-            <div className="text-8xl animate-bounce">🔮</div>
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-violet-50 to-indigo-50">
+            <span className="text-5xl">🔮</span>
           </div>
         )}
-      </figure>
 
-      <div className="card-body">
-        <div className="flex justify-between items-start mb-3">
-          <div className="badge badge-primary badge-lg gap-1">
-            <Sparkles className="w-3 h-3" />
-            {shaman.yearsExperience}년
-          </div>
-          <div className="badge badge-secondary badge-lg gap-1">
-            <Star className="w-3 h-3 fill-current" />
-            {shaman.averageRating.toFixed(1)}
+        {/* Experience Badge */}
+        <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-primary">
+          경력 {shaman.yearsExperience}년
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-bold text-gray-900 text-lg">{shaman.businessName}</h3>
+          <div className="flex items-center gap-1">
+            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+            <span className="text-sm font-semibold text-gray-900">{shaman.averageRating.toFixed(1)}</span>
           </div>
         </div>
 
-        <h2 className="card-title text-2xl mb-2">
-          {shaman.businessName}
-          <div className="badge badge-accent">NEW</div>
-        </h2>
-
-        <div className="flex items-center gap-2 text-sm opacity-80 mb-3">
-          <MapPin className="w-4 h-4" />
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3">
+          <MapPin className="w-3.5 h-3.5" />
           <span>{shaman.region} {shaman.district}</span>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {shaman.specialties.map((specialty) => (
-            <div key={specialty} className="badge badge-outline badge-primary">
+            <span
+              key={specialty}
+              className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full"
+            >
               {specialty}
-            </div>
+            </span>
           ))}
         </div>
 
-        <p className="line-clamp-2 opacity-90 mb-4 text-sm">
-          {shaman.description}
-        </p>
+        {shaman.description && (
+          <p className="text-sm text-gray-500 line-clamp-2 mb-3">{shaman.description}</p>
+        )}
 
-        <div className="flex items-baseline gap-1 mb-4">
-          <span className="text-3xl font-bold text-primary">
+        <div className="flex items-baseline gap-1 pt-3 border-t border-gray-100">
+          <span className="text-xl font-bold text-gray-900">
             {shaman.basePrice.toLocaleString()}
           </span>
-          <span className="text-lg">원~</span>
-        </div>
-
-        <div className="card-actions justify-end">
-          <Link href={`/shamans/${shaman.id}`} className="btn btn-primary btn-block">
-            <Sparkles className="w-4 h-4" />
-            상세보기
-          </Link>
+          <span className="text-sm text-gray-500">원~</span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

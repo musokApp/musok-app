@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Header } from "@/components/common/Header";
-import { Footer } from "@/components/common/Footer";
 
 export const metadata: Metadata = {
   title: "무속은 안 어려워?",
@@ -11,14 +9,12 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.NodeNode;
+  children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" suppressHydrationWarning data-theme="mystic">
-      <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+    <html lang="ko" suppressHydrationWarning>
+      <body className="min-h-screen flex flex-col font-sans antialiased bg-white text-foreground">
+        {children}
       </body>
     </html>
   );

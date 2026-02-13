@@ -46,6 +46,16 @@ export const DUMMY_USERS: User[] = [
     avatarUrl: null,
     createdAt: new Date().toISOString(),
   },
+  {
+    id: '4',
+    email: 'customer2@test.com',
+    password: hashedPassword,
+    fullName: '이예약',
+    phone: '010-4567-8901',
+    role: 'customer',
+    avatarUrl: null,
+    createdAt: new Date().toISOString(),
+  },
 ];
 
 // 이메일로 사용자 찾기

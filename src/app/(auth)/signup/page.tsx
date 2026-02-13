@@ -4,11 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ROUTES } from '@/constants/routes';
+import { Eye, EyeOff, Check } from 'lucide-react';
 
 export default function SignupPage() {
   const { signup, isLoading } = useAuth();
@@ -20,6 +17,7 @@ export default function SignupPage() {
     fullName: '',
     role: 'customer' as 'customer' | 'shaman',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -51,135 +49,172 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="text-center">회원가입 완료! ✅</CardTitle>
-            <CardDescription className="text-center">
-              로그인 페이지로 이동합니다...
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="w-full max-w-sm">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+            <Check className="w-7 h-7 text-green-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">회원가입 완료!</h2>
+          <p className="text-sm text-gray-500">로그인 페이지로 이동합니다...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 px-4 py-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">회원가입</CardTitle>
-          <CardDescription className="text-center">
-            계정을 만들어 서비스를 이용하세요
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md">
-                {error}
-              </div>
-            )}
+    <div className="w-full max-w-sm">
+      {/* Logo */}
+      <div className="text-center mb-8">
+        <Link href="/">
+          <span className="text-3xl font-extrabold text-primary">무속</span>
+        </Link>
+        <p className="text-sm text-gray-500 mt-2">계정을 만들어 서비스를 이용하세요</p>
+      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role">가입 유형</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  type="button"
-                  variant={formData.role === 'customer' ? 'default' : 'outline'}
-                  onClick={() => setFormData({ ...formData, role: 'customer' })}
-                  disabled={isLoading}
-                >
-                  고객
-                </Button>
-                <Button
-                  type="button"
-                  variant={formData.role === 'shaman' ? 'default' : 'outline'}
-                  onClick={() => setFormData({ ...formData, role: 'shaman' })}
-                  disabled={isLoading}
-                >
-                  무속인
-                </Button>
-              </div>
+      {/* Form Card */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl border border-red-100">
+              {error}
             </div>
+          )}
 
-            <div className="space-y-2">
-              <Label htmlFor="fullName">이름</Label>
-              <Input
-                id="fullName"
-                type="text"
-                placeholder="홍길동"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                required
+          {/* Role Selection */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">가입 유형</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, role: 'customer' })}
                 disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">이메일</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="example@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
+                className={`h-11 rounded-xl text-sm font-semibold transition-all ${
+                  formData.role === 'customer'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                고객
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, role: 'shaman' })}
                 disabled={isLoading}
-              />
+                className={`h-11 rounded-xl text-sm font-semibold transition-all ${
+                  formData.role === 'shaman'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100'
+                }`}
+              >
+                무속인
+              </button>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">비밀번호</Label>
-              <Input
+          {/* Name */}
+          <div>
+            <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1.5">
+              이름
+            </label>
+            <input
+              id="fullName"
+              type="text"
+              placeholder="홍길동"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+              required
+              disabled={isLoading}
+              className="w-full h-11 px-4 rounded-xl bg-gray-50 border border-gray-200 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50"
+            />
+          </div>
+
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1.5">
+              이메일
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="example@email.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
+              disabled={isLoading}
+              className="w-full h-11 px-4 rounded-xl bg-gray-50 border border-gray-200 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50"
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1.5">
+              비밀번호
+            </label>
+            <div className="relative">
+              <input
                 id="password"
-                type="password"
-                placeholder="••••••••"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="8자 이상 입력하세요"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={isLoading}
+                className="w-full h-11 px-4 pr-11 rounded-xl bg-gray-50 border border-gray-200 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                required
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-md text-sm text-yellow-800">
-              <p className="font-semibold mb-1">⚠️ 더미 회원가입</p>
-              <p className="text-xs">
-                실제 DB가 없어 회원가입 후 테스트 계정으로 로그인해주세요.
-              </p>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <Button
-              type="submit"
-              className="w-full"
+          {/* Confirm Password */}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1.5">
+              비밀번호 확인
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              placeholder="비밀번호를 다시 입력하세요"
+              value={formData.confirmPassword}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              required
               disabled={isLoading}
-            >
-              {isLoading ? '처리 중...' : '회원가입'}
-            </Button>
+              className="w-full h-11 px-4 rounded-xl bg-gray-50 border border-gray-200 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50"
+            />
+          </div>
 
-            <div className="text-sm text-center text-muted-foreground">
-              이미 계정이 있으신가요?{' '}
-              <Link href={ROUTES.LOGIN} className="text-primary hover:underline">
-                로그인
-              </Link>
-            </div>
-          </CardFooter>
+          {/* Notice */}
+          <div className="bg-amber-50 rounded-xl p-3.5 border border-amber-100">
+            <p className="text-xs font-semibold text-amber-700 mb-1">테스트 안내</p>
+            <p className="text-xs text-amber-600">
+              실제 DB가 없어 회원가입 후 테스트 계정으로 로그인해주세요.
+            </p>
+          </div>
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full h-11 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? '처리 중...' : '회원가입'}
+          </button>
         </form>
-      </Card>
+      </div>
+
+      {/* Footer Link */}
+      <p className="text-center text-sm text-gray-500 mt-6">
+        이미 계정이 있으신가요?{' '}
+        <Link href={ROUTES.LOGIN} className="text-primary font-semibold hover:underline">
+          로그인
+        </Link>
+      </p>
     </div>
   );
 }
