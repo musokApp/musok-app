@@ -7,8 +7,9 @@ import { UpdateBookingStatusData } from '@/types/booking.types';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = request.cookies.get('auth-token')?.value;
 
   if (!token) {
@@ -20,7 +21,7 @@ export async function GET(
     return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
   }
 
-  const booking = findBookingById(params.id);
+  const booking = findBookingById(id);
   if (!booking) {
     return NextResponse.json({ error: '예약을 찾을 수 없습니다' }, { status: 404 });
   }
@@ -69,8 +70,9 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const token = request.cookies.get('auth-token')?.value;
 
   if (!token) {
@@ -82,7 +84,7 @@ export async function PATCH(
     return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
   }
 
-  const booking = findBookingById(params.id);
+  const booking = findBookingById(id);
   if (!booking) {
     return NextResponse.json({ error: '예약을 찾을 수 없습니다' }, { status: 404 });
   }
@@ -122,7 +124,7 @@ export async function PATCH(
     }
   }
 
-  const updated = updateBookingStatus(params.id, body.status, body.rejectionReason);
+  const updated = updateBookingStatus(id, body.status, body.rejectionReason);
   if (!updated) {
     return NextResponse.json({ error: '예약 상태 변경에 실패했습니다' }, { status: 500 });
   }

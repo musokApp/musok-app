@@ -50,7 +50,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
 
     const shamanLinks = [
         { href: ROUTES.SHAMAN_DASHBOARD, label: '대시보드', icon: LayoutDashboard },
-        { href: ROUTES.SHAMAN_BOOKINGS, label: '예약 관리', icon: args => <Calendar {...args} /> }, // route is /bookings, careful with conflict
+        { href: ROUTES.SHAMAN_BOOKINGS, label: '예약 관리', icon: Calendar },
         { href: ROUTES.SHAMAN_SCHEDULE, label: '일정 관리', icon: History },
         { href: ROUTES.SHAMAN_REVIEWS, label: '후기 관리', icon: MessageSquare },
         { href: ROUTES.SHAMAN_REVENUE, label: '수익 현황', icon: BarChart },
