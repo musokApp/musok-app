@@ -1,31 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findShamanById } from '@/lib/data/shamans-data';
-import { DUMMY_USERS } from '@/lib/auth/users-data';
+import { findUserById } from '@/lib/auth/users-data';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const shaman = findShamanById(id);
+  const shaman = await findShamanById(id);
 
   if (!shaman) {
     return NextResponse.json({ error: '무속인을 찾을 수 없습니다' }, { status: 404 });
   }
 
   // 무속인의 사용자 정보 포함
-  const user = DUMMY_USERS.find((u) => u.id === shaman.userId);
+  const userRow = await findUserById(shaman.userId);
 
   return NextResponse.json({
     shaman: {
       ...shaman,
-      user: user
+      user: userRow
         ? {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            phone: user.phone,
-            avatarUrl: user.avatarUrl,
+            id: userRow.id,
+            email: userRow.email,
+            fullName: userRow.full_name,
+            phone: userRow.phone,
+            avatarUrl: userRow.avatar_url,
           }
         : null,
     },

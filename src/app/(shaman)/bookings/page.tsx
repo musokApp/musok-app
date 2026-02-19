@@ -6,6 +6,7 @@ import { getShamanBookings, updateBookingStatus } from '@/services/booking.servi
 import { BookingWithCustomer, BookingStatus } from '@/types/booking.types';
 import ShamanBookingCard from '@/components/booking/ShamanBookingCard';
 import { Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { MyPageLayout } from '@/components/layout/MyPageLayout';
 
 const STATUS_TABS: { value: BookingStatus | 'all'; label: string }[] = [
   { value: 'all', label: '전체' },
@@ -94,15 +95,12 @@ export default function ShamanBookingsPage() {
   const totalCount = bookings.length;
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">예약 관리</h1>
-        <p className="text-sm text-gray-500 mt-1">고객 예약을 확인하고 관리하세요</p>
-      </div>
+    <MyPageLayout>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">예약 관리</h1>
+      <p className="text-sm text-gray-500 mb-6">고객 예약을 확인하고 관리하세요</p>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         <div className="bg-white rounded-2xl border border-gray-100 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-4 h-4 text-amber-500" />
@@ -134,7 +132,7 @@ export default function ShamanBookingsPage() {
       </div>
 
       {/* Status Tabs */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+      <div className="flex gap-2 overflow-x-auto pb-6 no-scrollbar">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -197,6 +195,6 @@ export default function ShamanBookingsPage() {
           ))}
         </div>
       )}
-    </div>
+    </MyPageLayout>
   );
 }

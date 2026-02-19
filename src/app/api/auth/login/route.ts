@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 사용자 찾기
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user) {
       return NextResponse.json(
         { error: '이메일 또는 비밀번호가 올바르지 않습니다' },
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 비밀번호 검증
-    const isValidPassword = verifyPassword(password, user.password);
+    const isValidPassword = verifyPassword(password, user.password_hash);
     if (!isValidPassword) {
       return NextResponse.json(
         { error: '이메일 또는 비밀번호가 올바르지 않습니다' },

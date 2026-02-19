@@ -8,6 +8,7 @@ import { ChatRoomWithParticipant } from '@/types/chat.types';
 import ChatRoomCard from '@/components/chat/ChatRoomCard';
 import { MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import { MyPageLayout } from '@/components/layout/MyPageLayout';
 
 export default function ChatListPage() {
   const router = useRouter();
@@ -44,18 +45,13 @@ export default function ChatListPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-gray-900">채팅</h1>
-          <p className="text-sm text-gray-500 mt-1">무속인과 대화하세요</p>
-        </div>
-      </div>
+    <MyPageLayout>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">채팅</h1>
+      <p className="text-sm text-gray-500 mb-6">무속인과 대화하세요</p>
 
       {/* Room List */}
       {loading ? (
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-gray-100">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3 p-4 animate-pulse">
               <div className="w-12 h-12 rounded-full bg-gray-100" />
@@ -84,12 +80,12 @@ export default function ChatListPage() {
           </Link>
         </div>
       ) : (
-        <div className="divide-y divide-gray-50">
+        <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden">
           {rooms.map((room) => (
             <ChatRoomCard key={room.id} room={room} basePath="/chat" />
           ))}
         </div>
       )}
-    </div>
+    </MyPageLayout>
   );
 }

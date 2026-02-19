@@ -1,207 +1,208 @@
+import { createClient } from '@/lib/supabase/server';
+import { mapChatRoomRow, mapMessageRow } from '@/lib/supabase/mappers';
 import { ChatRoom, Message } from '@/types/chat.types';
 
-export const DUMMY_CHAT_ROOMS: ChatRoom[] = [
-  {
-    id: 'room-1',
-    customerId: '1',
-    shamanId: 'shaman-1',
-    participants: ['1', '2'],
-    lastMessage: '네, 다음 주 화요일 10시에 뵙겠습니다.',
-    lastMessageAt: '2025-02-14T15:30:00Z',
-    createdAt: '2025-02-10T09:00:00Z',
-  },
-  {
-    id: 'room-2',
-    customerId: '1',
-    shamanId: 'shaman-3',
-    participants: ['1', 'user-shaman-3'],
-    lastMessage: '타로 상담은 보통 40분 정도 소요됩니다.',
-    lastMessageAt: '2025-02-13T11:20:00Z',
-    createdAt: '2025-02-12T14:00:00Z',
-  },
-];
+export async function findRoomById(roomId: string): Promise<ChatRoom | undefined> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('chat_rooms')
+    .select('*')
+    .eq('id', roomId)
+    .single();
 
-export const DUMMY_MESSAGES: Message[] = [
-  // Room 1: 김고객 ↔ 명가점술원 (박무속)
-  {
-    id: 'msg-1',
-    roomId: 'room-1',
-    senderId: '1',
-    content: '안녕하세요, 사주 상담 문의드립니다.',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-10T09:00:00Z',
-  },
-  {
-    id: 'msg-2',
-    roomId: 'room-1',
-    senderId: '2',
-    content: '안녕하세요! 명가점술원입니다. 어떤 상담을 원하시나요?',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-10T09:05:00Z',
-  },
-  {
-    id: 'msg-3',
-    roomId: 'room-1',
-    senderId: '1',
-    content: '2025년 신년 운세를 보고 싶은데, 예약 가능한 날짜가 있을까요?',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-10T09:10:00Z',
-  },
-  {
-    id: 'msg-4',
-    roomId: 'room-1',
-    senderId: '2',
-    content: '네, 다음 주에 화요일과 목요일 오전에 자리가 있습니다. 사주 상담은 약 1시간 정도 소요됩니다.',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-10T09:15:00Z',
-  },
-  {
-    id: 'msg-5',
-    roomId: 'room-1',
-    senderId: '1',
-    content: '화요일 10시에 예약하고 싶습니다!',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-14T15:20:00Z',
-  },
-  {
-    id: 'msg-6',
-    roomId: 'room-1',
-    senderId: '2',
-    content: '네, 다음 주 화요일 10시에 뵙겠습니다.',
-    type: 'text',
-    isRead: false,
-    createdAt: '2025-02-14T15:30:00Z',
-  },
+  if (error || !data) return undefined;
 
-  // Room 2: 김고객 ↔ 별빛타로
-  {
-    id: 'msg-7',
-    roomId: 'room-2',
-    senderId: '1',
-    content: '타로 상담은 어떻게 진행되나요?',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-12T14:00:00Z',
-  },
-  {
-    id: 'msg-8',
-    roomId: 'room-2',
-    senderId: 'user-shaman-3',
-    content: '안녕하세요! 별빛타로입니다. 연애, 결혼, 진로 등 궁금하신 분야에 대해 타로 카드로 상담해드립니다.',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-12T14:10:00Z',
-  },
-  {
-    id: 'msg-9',
-    roomId: 'room-2',
-    senderId: '1',
-    content: '연애운을 보고 싶어요. 소요 시간이 어느 정도 되나요?',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-13T10:00:00Z',
-  },
-  {
-    id: 'msg-10',
-    roomId: 'room-2',
-    senderId: 'user-shaman-3',
-    content: '타로 상담은 보통 40분 정도 소요됩니다.',
-    type: 'text',
-    isRead: true,
-    createdAt: '2025-02-13T11:20:00Z',
-  },
-];
+  // participants 계산: customer_id + shaman의 user_id
+  const { data: shaman } = await supabase
+    .from('shamans')
+    .select('user_id')
+    .eq('id', data.shaman_id)
+    .single();
 
-// 런타임 변경을 위한 mutable 배열
-let chatRooms = [...DUMMY_CHAT_ROOMS];
-let messages = [...DUMMY_MESSAGES];
+  const participants = [data.customer_id];
+  if (shaman) participants.push(shaman.user_id);
 
-export function findRoomById(roomId: string): ChatRoom | undefined {
-  return chatRooms.find((r) => r.id === roomId);
+  return mapChatRoomRow({ ...data, participants });
 }
 
-export function getRoomsByUserId(userId: string): ChatRoom[] {
-  return chatRooms
-    .filter((r) => r.participants.includes(userId))
-    .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
-}
+export async function getRoomsByUserId(userId: string): Promise<ChatRoom[]> {
+  const supabase = createClient();
 
-export function findExistingRoom(customerId: string, shamanId: string): ChatRoom | undefined {
-  return chatRooms.find((r) => r.customerId === customerId && r.shamanId === shamanId);
-}
+  // 이 유저의 shaman 프로필이 있는지 확인
+  const { data: shamanProfile } = await supabase
+    .from('shamans')
+    .select('id, user_id')
+    .eq('user_id', userId)
+    .single();
 
-export function createRoom(customerId: string, shamanId: string, shamanUserId: string): ChatRoom {
-  const existing = findExistingRoom(customerId, shamanId);
-  if (existing) return existing;
-
-  const newRoom: ChatRoom = {
-    id: `room-${Date.now()}`,
-    customerId,
-    shamanId,
-    participants: [customerId, shamanUserId],
-    lastMessage: '',
-    lastMessageAt: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-  };
-  chatRooms.push(newRoom);
-  return newRoom;
-}
-
-export function getMessagesByRoomId(roomId: string): Message[] {
-  return messages
-    .filter((m) => m.roomId === roomId)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-}
-
-export function addMessage(roomId: string, senderId: string, content: string): Message {
-  const newMessage: Message = {
-    id: `msg-${Date.now()}`,
-    roomId,
-    senderId,
-    content,
-    type: 'text',
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  };
-  messages.push(newMessage);
-
-  // 채팅방의 lastMessage 업데이트
-  const roomIndex = chatRooms.findIndex((r) => r.id === roomId);
-  if (roomIndex !== -1) {
-    chatRooms[roomIndex] = {
-      ...chatRooms[roomIndex],
-      lastMessage: content,
-      lastMessageAt: newMessage.createdAt,
-    };
+  // customer_id 또는 shaman_id로 채팅방 조회
+  let orCondition = `customer_id.eq.${userId}`;
+  if (shamanProfile) {
+    orCondition += `,shaman_id.eq.${shamanProfile.id}`;
   }
 
-  return newMessage;
+  const { data, error } = await supabase
+    .from('chat_rooms')
+    .select('*')
+    .or(orCondition)
+    .order('last_message_at', { ascending: false });
+
+  if (error || !data) return [];
+
+  // 각 방의 shaman user_id를 조회하여 participants 구성
+  const shamanIds = [...new Set(data.map((r) => r.shaman_id))];
+  const { data: shamans } = await supabase
+    .from('shamans')
+    .select('id, user_id')
+    .in('id', shamanIds);
+
+  const shamanUserMap = new Map<string, string>();
+  shamans?.forEach((s) => shamanUserMap.set(s.id, s.user_id));
+
+  return data.map((row) =>
+    mapChatRoomRow({
+      ...row,
+      participants: [row.customer_id, shamanUserMap.get(row.shaman_id) || ''].filter(Boolean),
+    })
+  );
 }
 
-export function markMessagesAsRead(roomId: string, userId: string): void {
-  messages = messages.map((m) => {
-    if (m.roomId === roomId && m.senderId !== userId && !m.isRead) {
-      return { ...m, isRead: true };
-    }
-    return m;
-  });
+export async function findExistingRoom(customerId: string, shamanId: string): Promise<ChatRoom | undefined> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('chat_rooms')
+    .select('*')
+    .eq('customer_id', customerId)
+    .eq('shaman_id', shamanId)
+    .single();
+
+  if (error || !data) return undefined;
+
+  const { data: shaman } = await supabase
+    .from('shamans')
+    .select('user_id')
+    .eq('id', data.shaman_id)
+    .single();
+
+  const participants = [data.customer_id];
+  if (shaman) participants.push(shaman.user_id);
+
+  return mapChatRoomRow({ ...data, participants });
 }
 
-export function getUnreadCount(userId: string): number {
-  const userRooms = getRoomsByUserId(userId);
-  const roomIds = userRooms.map((r) => r.id);
-  return messages.filter(
-    (m) => roomIds.includes(m.roomId) && m.senderId !== userId && !m.isRead
-  ).length;
+export async function createRoom(customerId: string, shamanId: string, shamanUserId: string): Promise<ChatRoom> {
+  const existing = await findExistingRoom(customerId, shamanId);
+  if (existing) return existing;
+
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('chat_rooms')
+    .insert({
+      customer_id: customerId,
+      shaman_id: shamanId,
+    })
+    .select()
+    .single();
+
+  if (error || !data) throw error || new Error('채팅방 생성 실패');
+  return mapChatRoomRow({ ...data, participants: [customerId, shamanUserId] });
 }
 
-export function getUnreadCountByRoom(roomId: string, userId: string): number {
-  return messages.filter(
-    (m) => m.roomId === roomId && m.senderId !== userId && !m.isRead
-  ).length;
+export async function getMessagesByRoomId(roomId: string): Promise<Message[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('room_id', roomId)
+    .order('created_at', { ascending: true });
+
+  if (error || !data) return [];
+  return data.map(mapMessageRow);
+}
+
+export async function addMessage(roomId: string, senderId: string, content: string): Promise<Message> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('messages')
+    .insert({
+      room_id: roomId,
+      sender_id: senderId,
+      content,
+      type: 'text',
+    })
+    .select()
+    .single();
+
+  if (error || !data) throw error || new Error('메시지 전송 실패');
+
+  // chat_rooms.last_message 업데이트
+  await supabase
+    .from('chat_rooms')
+    .update({
+      last_message: content,
+      last_message_at: data.created_at,
+    })
+    .eq('id', roomId);
+
+  return mapMessageRow(data);
+}
+
+export async function markMessagesAsRead(roomId: string, userId: string): Promise<void> {
+  const supabase = createClient();
+  await supabase
+    .from('messages')
+    .update({ is_read: true })
+    .eq('room_id', roomId)
+    .neq('sender_id', userId)
+    .eq('is_read', false);
+}
+
+export async function getUnreadCount(userId: string): Promise<number> {
+  const supabase = createClient();
+
+  // 유저의 shaman 프로필 확인
+  const { data: shamanProfile } = await supabase
+    .from('shamans')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+
+  // 유저가 참여한 채팅방 ID 목록
+  let orCondition = `customer_id.eq.${userId}`;
+  if (shamanProfile) {
+    orCondition += `,shaman_id.eq.${shamanProfile.id}`;
+  }
+
+  const { data: rooms } = await supabase
+    .from('chat_rooms')
+    .select('id')
+    .or(orCondition);
+
+  if (!rooms || rooms.length === 0) return 0;
+
+  const roomIds = rooms.map((r) => r.id);
+
+  const { count, error } = await supabase
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .in('room_id', roomIds)
+    .neq('sender_id', userId)
+    .eq('is_read', false);
+
+  if (error) return 0;
+  return count || 0;
+}
+
+export async function getUnreadCountByRoom(roomId: string, userId: string): Promise<number> {
+  const supabase = createClient();
+  const { count, error } = await supabase
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('room_id', roomId)
+    .neq('sender_id', userId)
+    .eq('is_read', false);
+
+  if (error) return 0;
+  return count || 0;
 }

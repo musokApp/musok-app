@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ROUTES } from "@/constants/routes";
+import { ShamanProfile } from "@/types/shaman.types";
 import {
     Sparkles, Eye, Moon, Star, Flame, Compass,
     Clock, Shield, ChevronRight, ArrowRight, Heart, Users, MessageCircle
@@ -18,14 +20,17 @@ const CATEGORIES = [
     { icon: Heart, label: "채팅상담", color: "bg-rose-100 text-rose-600", href: ROUTES.SHAMANS },
 ];
 
-const POPULAR_SHAMANS = [
-    { name: "청운 선생", specialty: "사주 · 타로", rating: 4.9, reviews: 1283, price: "30,000", tag: "인기" },
-    { name: "해월 선생", specialty: "신점 · 궁합", rating: 4.8, reviews: 892, price: "50,000", tag: "추천" },
-    { name: "소연 선생", specialty: "타로 · 전화상담", rating: 4.9, reviews: 2104, price: "25,000", tag: "신규" },
-    { name: "명진 선생", specialty: "풍수 · 작명", rating: 4.7, reviews: 567, price: "40,000", tag: null },
-];
-
 export default function HomePage() {
+    const [popularShamans, setPopularShamans] = useState<ShamanProfile[]>([]);
+
+    useEffect(() => {
+        fetch('/api/shamans?limit=4')
+            .then(res => res.json())
+            .then(data => {
+                if (data.shamans) setPopularShamans(data.shamans.slice(0, 4));
+            })
+            .catch(() => {});
+    }, []);
     return (
         <div className="flex flex-col">
             {/* Promo Banner */}
@@ -161,50 +166,60 @@ export default function HomePage() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {POPULAR_SHAMANS.map((shaman) => (
-                            <Link
-                                key={shaman.name}
-                                href={ROUTES.SHAMANS}
-                                className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
-                            >
-                                {/* Avatar placeholder */}
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
-                                        <span className="text-lg font-bold text-primary">
-                                            {shaman.name.charAt(0)}
+                        {popularShamans.length === 0 ? (
+                            Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 animate-pulse">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-12 h-12 rounded-full bg-gray-200" />
+                                        <div className="flex-1">
+                                            <div className="h-4 bg-gray-200 rounded w-20 mb-2" />
+                                            <div className="h-3 bg-gray-100 rounded w-16" />
+                                        </div>
+                                    </div>
+                                    <div className="h-4 bg-gray-100 rounded w-24 mb-3" />
+                                    <div className="h-5 bg-gray-200 rounded w-16" />
+                                </div>
+                            ))
+                        ) : (
+                            popularShamans.map((shaman) => (
+                                <Link
+                                    key={shaman.id}
+                                    href={`${ROUTES.SHAMANS}/${shaman.id}`}
+                                    className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                                >
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center">
+                                            <span className="text-lg font-bold text-primary">
+                                                {shaman.businessName.charAt(0)}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-gray-900">{shaman.businessName}</h3>
+                                            <p className="text-xs text-gray-500 mt-0.5">
+                                                {shaman.specialties.slice(0, 2).join(' · ')}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5 mb-3">
+                                        <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                                        <span className="text-sm font-semibold text-gray-900">
+                                            {shaman.averageRating?.toFixed(1) ?? '-'}
+                                        </span>
+                                        <span className="text-xs text-gray-400">
+                                            ({shaman.totalBookings?.toLocaleString() ?? 0}건)
                                         </span>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-semibold text-gray-900">{shaman.name}</h3>
-                                            {shaman.tag && (
-                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                                    shaman.tag === '인기' ? 'bg-red-100 text-red-600' :
-                                                    shaman.tag === '추천' ? 'bg-blue-100 text-blue-600' :
-                                                    'bg-green-100 text-green-600'
-                                                }`}>
-                                                    {shaman.tag}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-0.5">{shaman.specialty}</p>
+
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-lg font-bold text-gray-900">
+                                            {shaman.basePrice.toLocaleString()}
+                                        </span>
+                                        <span className="text-sm text-gray-500">원~</span>
                                     </div>
-                                </div>
-
-                                {/* Rating */}
-                                <div className="flex items-center gap-1.5 mb-3">
-                                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                                    <span className="text-sm font-semibold text-gray-900">{shaman.rating}</span>
-                                    <span className="text-xs text-gray-400">({shaman.reviews.toLocaleString()})</span>
-                                </div>
-
-                                {/* Price */}
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-lg font-bold text-gray-900">{shaman.price}</span>
-                                    <span className="text-sm text-gray-500">원~</span>
-                                </div>
-                            </Link>
-                        ))}
+                                </Link>
+                            ))
+                        )}
                     </div>
                 </div>
             </section>

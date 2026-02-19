@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { findUserByEmail, createUser, getUserWithoutPassword } from '@/lib/auth/users-data';
 
-// 더미 회원가입 (실제 DB 없이 시뮬레이션)
 export async function POST(request: NextRequest) {
   try {
     const { email, password, fullName, role } = await request.json();
@@ -20,15 +20,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 더미 응답 (실제로는 DB에 저장하고 토큰 발급)
+    // 이메일 중복 검사
+    const existing = await findUserByEmail(email);
+    if (existing) {
+      return NextResponse.json(
+        { error: '이미 사용 중인 이메일입니다' },
+        { status: 409 }
+      );
+    }
+
+    // 실제 DB에 사용자 생성
+    const profile = await createUser({ email, password, fullName, role });
+
     return NextResponse.json({
       message: '회원가입이 완료되었습니다. 로그인해주세요.',
-      user: {
-        id: 'temp-' + Date.now(),
-        email,
-        fullName,
-        role,
-      },
+      user: getUserWithoutPassword(profile),
     });
   } catch (error) {
     console.error('Signup error:', error);

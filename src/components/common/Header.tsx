@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/hooks/useAuth';
-import { Search, User, Heart, Menu, X, LogOut } from 'lucide-react';
+import { Search, User, Heart, MessageSquare, Menu, X, LogOut } from 'lucide-react';
 
 export function Header() {
   const { user, logout, isLoading } = useAuth();
@@ -45,6 +45,13 @@ export function Header() {
                 >
                   <Heart className="w-5 h-5 text-gray-600" />
                   <span className="text-[11px] text-gray-600">내 예약</span>
+                </Link>
+                <Link
+                  href={ROUTES.CHAT}
+                  className="flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <MessageSquare className="w-5 h-5 text-gray-600" />
+                  <span className="text-[11px] text-gray-600">채팅</span>
                 </Link>
                 <Link
                   href={ROUTES.CUSTOMER_PROFILE}
@@ -133,6 +140,13 @@ export function Header() {
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   채팅
+                </Link>
+                <Link
+                  href={ROUTES.CUSTOMER_PROFILE}
+                  className="px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  내 프로필
                 </Link>
                 <div className="h-px bg-gray-100 my-2" />
                 <div className="px-4 py-2 text-sm text-gray-500">

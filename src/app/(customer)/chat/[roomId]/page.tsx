@@ -114,7 +114,7 @@ export default function ChatRoomPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white max-w-2xl mx-auto w-full">
       {/* Top Bar */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0">
         <button
@@ -146,7 +146,7 @@ export default function ChatRoomPage() {
       {/* Messages Area */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-4"
+        className="flex-1 overflow-y-auto px-4 py-4 bg-gray-50/30"
       >
         {loading ? (
           <div className="flex items-center justify-center py-20">

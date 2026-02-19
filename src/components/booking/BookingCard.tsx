@@ -6,11 +6,13 @@ import {
   BOOKING_STATUS_LABELS,
   BOOKING_STATUS_COLORS,
 } from '@/types/booking.types';
-import { Calendar, Tag, CreditCard } from 'lucide-react';
+import { Calendar, Tag, CreditCard, Star } from 'lucide-react';
 
 interface BookingCardProps {
   booking: BookingWithShaman;
   onCancel: (id: string) => void;
+  onReview?: (booking: BookingWithShaman) => void;
+  hasReview?: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -23,7 +25,7 @@ function formatCreatedAt(isoStr: string): string {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function BookingCard({ booking, onCancel }: BookingCardProps) {
+export default function BookingCard({ booking, onCancel, onReview, hasReview }: BookingCardProps) {
   const { shaman } = booking;
 
   return (
@@ -90,6 +92,33 @@ export default function BookingCard({ booking, onCancel }: BookingCardProps) {
           >
             예약 취소
           </button>
+          {shaman && (
+            <Link
+              href={`/shamans/${shaman.id}`}
+              className="flex-1 py-2.5 text-sm font-medium text-center text-primary bg-primary/5 rounded-xl hover:bg-primary/10 transition-colors"
+            >
+              상세 보기
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Review Button - completed bookings */}
+      {booking.status === 'completed' && (
+        <div className="flex gap-2 pt-1">
+          {!hasReview && onReview ? (
+            <button
+              onClick={() => onReview(booking)}
+              className="flex-1 py-2.5 text-sm font-medium text-amber-600 bg-amber-50 rounded-xl hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <Star size={14} />
+              후기 작성
+            </button>
+          ) : (
+            <div className="flex-1 py-2.5 text-sm font-medium text-green-600 bg-green-50 rounded-xl text-center">
+              후기 작성 완료
+            </div>
+          )}
           {shaman && (
             <Link
               href={`/shamans/${shaman.id}`}

@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     searchQuery: searchParams.get('search') || undefined,
   };
 
-  const shamans = getFilteredShamans(filters);
+  const shamans = await getFilteredShamans(filters);
 
   return NextResponse.json({ shamans, total: shamans.length });
 }

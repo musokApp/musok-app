@@ -1,71 +1,31 @@
 import bcrypt from 'bcryptjs';
+import { createClient } from '@/lib/supabase/server';
+import { mapProfileToUser } from '@/lib/supabase/mappers';
 
-export interface User {
-  id: string;
-  email: string;
-  password: string; // hashed
-  fullName: string;
-  phone: string | null;
-  role: 'customer' | 'shaman' | 'admin';
-  avatarUrl: string | null;
-  createdAt: string;
+// 이메일로 사용자 찾기 (password_hash 포함)
+export async function findUserByEmail(email: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (error || !data) return undefined;
+  return data;
 }
 
-// 비밀번호: password123
-const hashedPassword = bcrypt.hashSync('password123', 10);
+// ID로 사용자 찾기 (password_hash 포함)
+export async function findUserById(id: string) {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .single();
 
-// 더미 사용자 데이터
-export const DUMMY_USERS: User[] = [
-  {
-    id: '1',
-    email: 'customer@test.com',
-    password: hashedPassword,
-    fullName: '김고객',
-    phone: '010-1234-5678',
-    role: 'customer',
-    avatarUrl: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    email: 'shaman@test.com',
-    password: hashedPassword,
-    fullName: '박무속',
-    phone: '010-2345-6789',
-    role: 'shaman',
-    avatarUrl: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    email: 'admin@test.com',
-    password: hashedPassword,
-    fullName: '이관리',
-    phone: '010-3456-7890',
-    role: 'admin',
-    avatarUrl: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    email: 'customer2@test.com',
-    password: hashedPassword,
-    fullName: '이예약',
-    phone: '010-4567-8901',
-    role: 'customer',
-    avatarUrl: null,
-    createdAt: new Date().toISOString(),
-  },
-];
-
-// 이메일로 사용자 찾기
-export function findUserByEmail(email: string): User | undefined {
-  return DUMMY_USERS.find(user => user.email === email);
-}
-
-// ID로 사용자 찾기
-export function findUserById(id: string): User | undefined {
-  return DUMMY_USERS.find(user => user.id === id);
+  if (error || !data) return undefined;
+  return data;
 }
 
 // 비밀번호 검증
@@ -73,8 +33,51 @@ export function verifyPassword(password: string, hashedPassword: string): boolea
   return bcrypt.compareSync(password, hashedPassword);
 }
 
-// 사용자 정보 (비밀번호 제외)
-export function getUserWithoutPassword(user: User) {
-  const { password, ...userWithoutPassword } = user;
-  return userWithoutPassword;
+// 사용자 정보 (비밀번호 제외) → camelCase
+export function getUserWithoutPassword(row: any) {
+  return mapProfileToUser(row);
+}
+
+// 사용자 정보 수정
+export async function updateUser(id: string, data: { fullName?: string; phone?: string | null }) {
+  const supabase = createClient();
+  const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+  if (data.fullName !== undefined) updateData.full_name = data.fullName;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+
+  const { data: row, error } = await supabase
+    .from('users')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !row) return undefined;
+  return row;
+}
+
+// 새 사용자 생성
+export async function createUser(data: {
+  email: string;
+  password: string;
+  fullName: string;
+  role: 'customer' | 'shaman';
+}) {
+  const supabase = createClient();
+  const passwordHash = bcrypt.hashSync(data.password, 10);
+
+  const { data: profile, error } = await supabase
+    .from('users')
+    .insert({
+      email: data.email,
+      full_name: data.fullName,
+      role: data.role,
+      password_hash: passwordHash,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return profile;
 }

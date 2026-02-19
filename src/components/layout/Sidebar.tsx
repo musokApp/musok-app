@@ -11,7 +11,6 @@ import {
     Calendar,
     MessageSquare,
     User,
-    Settings,
     LogOut,
     Users,
     FileText,
@@ -33,19 +32,11 @@ export function Sidebar({ className, onClose }: SidebarProps) {
 
     const isActive = (path: string) => pathname === path || pathname?.startsWith(`${path}/`);
 
-    const commonLinks = [
-        {
-            href: ROUTES.CUSTOMER_PROFILE, // Profile is common but path might differ based on role implementation
-            label: '내 프로필',
-            icon: User,
-            show: true,
-        },
-    ];
-
     const customerLinks = [
         { href: ROUTES.SHAMANS, label: '무속인 찾기', icon: Search },
         { href: ROUTES.MY_BOOKINGS, label: '내 예약', icon: Calendar },
         { href: ROUTES.CHAT, label: '채팅', icon: MessageSquare },
+        { href: ROUTES.CUSTOMER_PROFILE, label: '내 프로필', icon: User },
     ];
 
     const shamanLinks = [
@@ -55,6 +46,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
         { href: ROUTES.SHAMAN_SCHEDULE, label: '일정 관리', icon: History },
         { href: ROUTES.SHAMAN_REVIEWS, label: '후기 관리', icon: FileText },
         { href: ROUTES.SHAMAN_REVENUE, label: '수익 현황', icon: BarChart },
+        { href: ROUTES.SHAMAN_PROFILE, label: '내 프로필', icon: User },
     ];
 
     const adminLinks = [

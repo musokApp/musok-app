@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'shamanId와 date 파라미터가 필요합니다' }, { status: 400 });
   }
 
-  const bookedSlots = getBookedTimeSlots(shamanId, date);
+  const bookedSlots = await getBookedTimeSlots(shamanId, date);
 
   const slots = ALL_TIME_SLOTS.map((time) => ({
     time,

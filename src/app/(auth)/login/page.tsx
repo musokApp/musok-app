@@ -96,16 +96,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Test Accounts */}
-        <div className="mt-4 bg-gray-50 rounded-xl p-3.5 border border-gray-100">
-          <p className="text-xs font-semibold text-gray-600 mb-2">테스트 계정</p>
-          <div className="space-y-1 text-xs text-gray-500">
-            <p>고객: customer@test.com</p>
-            <p>무속인: shaman@test.com</p>
-            <p>관리자: admin@test.com</p>
-            <p>비밀번호: password123</p>
-          </div>
-        </div>
       </div>
 
       {/* Footer Link */}

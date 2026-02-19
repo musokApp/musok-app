@@ -5,7 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getShamanById } from '@/services/shaman.service';
 import { getOrCreateRoom } from '@/services/chat.service';
+import { getReviewsByShamanId } from '@/services/review.service';
 import { ShamanWithUser } from '@/types/shaman.types';
+import { ReviewWithCustomer } from '@/types/review.types';
+import ReviewCard from '@/components/reviews/ReviewCard';
+import StarRating from '@/components/reviews/StarRating';
 import {
   MapPin, Star, Briefcase, Phone, Mail, ChevronLeft,
   Clock, Shield, Share2, Heart, MessageCircle, Calendar
@@ -17,6 +21,7 @@ export default function ShamanDetailPage() {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const [shaman, setShaman] = useState<ShamanWithUser | null>(null);
+  const [reviews, setReviews] = useState<ReviewWithCustomer[]>([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
 
@@ -45,6 +50,13 @@ export default function ShamanDetailPage() {
       setLoading(true);
       const data = await getShamanById(id);
       setShaman(data);
+      // 리뷰 로드
+      try {
+        const reviewData = await getReviewsByShamanId(id);
+        setReviews(reviewData);
+      } catch {
+        // silently fail
+      }
     } catch (error) {
       console.error('Failed to fetch shaman:', error);
     } finally {
@@ -271,17 +283,26 @@ export default function ShamanDetailPage() {
             {/* Reviews */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">후기</h2>
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span className="text-sm font-bold text-gray-900">{shaman.averageRating.toFixed(1)}</span>
-                  <span className="text-sm text-gray-400">({shaman.totalBookings})</span>
+                <h2 className="text-lg font-bold text-gray-900">후기 ({reviews.length})</h2>
+                {reviews.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    <span className="text-sm font-bold text-gray-900">{shaman.averageRating.toFixed(1)}</span>
+                  </div>
+                )}
+              </div>
+              {reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
                 </div>
-              </div>
-              <div className="text-center py-12 bg-gray-50 rounded-2xl">
-                <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-400">후기 기능은 추후 추가될 예정입니다</p>
-              </div>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-2xl">
+                  <MessageCircle className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-sm text-gray-400">아직 후기가 없습니다</p>
+                </div>
+              )}
             </div>
           </div>
 

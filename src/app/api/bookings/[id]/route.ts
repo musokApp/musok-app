@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
 import { findBookingById, updateBookingStatus } from '@/lib/data/bookings-data';
 import { findShamanById, findShamanByUserId } from '@/lib/data/shamans-data';
-import { DUMMY_USERS } from '@/lib/auth/users-data';
+import { findUserById } from '@/lib/auth/users-data';
 import { UpdateBookingStatusData } from '@/types/booking.types';
 
 export async function GET(
@@ -21,7 +21,7 @@ export async function GET(
     return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
   }
 
-  const booking = findBookingById(id);
+  const booking = await findBookingById(id);
   if (!booking) {
     return NextResponse.json({ error: '예약을 찾을 수 없습니다' }, { status: 404 });
   }
@@ -31,14 +31,14 @@ export async function GET(
   }
 
   if (user.role === 'shaman') {
-    const shaman = findShamanByUserId(user.userId);
+    const shaman = await findShamanByUserId(user.userId);
     if (!shaman || shaman.id !== booking.shamanId) {
       return NextResponse.json({ error: '접근 권한이 없습니다' }, { status: 403 });
     }
   }
 
-  const shaman = findShamanById(booking.shamanId);
-  const customer = DUMMY_USERS.find((u) => u.id === booking.customerId);
+  const shaman = await findShamanById(booking.shamanId);
+  const customerRow = await findUserById(booking.customerId);
 
   return NextResponse.json({
     booking: {
@@ -55,12 +55,12 @@ export async function GET(
             specialties: shaman.specialties,
           }
         : null,
-      customer: customer
+      customer: customerRow
         ? {
-            id: customer.id,
-            fullName: customer.fullName,
-            email: customer.email,
-            phone: customer.phone,
+            id: customerRow.id,
+            fullName: customerRow.full_name,
+            email: customerRow.email,
+            phone: customerRow.phone,
           }
         : null,
     },
@@ -83,7 +83,7 @@ export async function PATCH(
     return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
   }
 
-  const booking = findBookingById(id);
+  const booking = await findBookingById(id);
   if (!booking) {
     return NextResponse.json({ error: '예약을 찾을 수 없습니다' }, { status: 404 });
   }
@@ -103,7 +103,7 @@ export async function PATCH(
   }
 
   if (user.role === 'shaman') {
-    const shaman = findShamanByUserId(user.userId);
+    const shaman = await findShamanByUserId(user.userId);
     if (!shaman || shaman.id !== booking.shamanId) {
       return NextResponse.json({ error: '접근 권한이 없습니다' }, { status: 403 });
     }
@@ -121,7 +121,7 @@ export async function PATCH(
     }
   }
 
-  const updated = updateBookingStatus(id, body.status, body.rejectionReason);
+  const updated = await updateBookingStatus(id, body.status, body.rejectionReason);
   if (!updated) {
     return NextResponse.json({ error: '예약 상태 변경에 실패했습니다' }, { status: 500 });
   }

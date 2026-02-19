@@ -189,14 +189,6 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* Notice */}
-          <div className="bg-amber-50 rounded-xl p-3.5 border border-amber-100">
-            <p className="text-xs font-semibold text-amber-700 mb-1">테스트 안내</p>
-            <p className="text-xs text-amber-600">
-              실제 DB가 없어 회원가입 후 테스트 계정으로 로그인해주세요.
-            </p>
-          </div>
-
           {/* Submit */}
           <button
             type="submit"

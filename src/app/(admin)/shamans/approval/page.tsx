@@ -40,18 +40,36 @@ export default function ShamanApprovalPage() {
     }
   };
 
-  const handleApprove = (shamanId: string) => {
-    // 더미 데이터이므로 실제로는 저장하지 않음
-    alert('승인되었습니다 (더미 모드)');
-    // 실제로는 API 호출 후 목록 갱신
-    setShamans((prev) => prev.filter((s) => s.id !== shamanId));
+  const handleApprove = async (shamanId: string) => {
+    try {
+      const response = await fetch(`/api/admin/shamans/${shamanId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved' }),
+      });
+      if (response.ok) {
+        setShamans((prev) => prev.filter((s) => s.id !== shamanId));
+      }
+    } catch (error) {
+      console.error('Failed to approve shaman:', error);
+    }
   };
 
-  const handleReject = (shamanId: string) => {
-    // 더미 데이터이므로 실제로는 저장하지 않음
-    alert('거절되었습니다 (더미 모드)');
-    // 실제로는 API 호출 후 목록 갱신
-    setShamans((prev) => prev.filter((s) => s.id !== shamanId));
+  const handleReject = async (shamanId: string) => {
+    const reason = prompt('거절 사유를 입력해주세요:');
+    if (reason === null) return;
+    try {
+      const response = await fetch(`/api/admin/shamans/${shamanId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'rejected', rejectionReason: reason }),
+      });
+      if (response.ok) {
+        setShamans((prev) => prev.filter((s) => s.id !== shamanId));
+      }
+    } catch (error) {
+      console.error('Failed to reject shaman:', error);
+    }
   };
 
   if (isLoading || loading) {
@@ -206,14 +224,6 @@ export default function ShamanApprovalPage() {
           </div>
         )}
 
-        {/* 안내 메시지 */}
-        <Card className="mt-6">
-          <CardContent className="py-4">
-            <p className="text-sm text-muted-foreground">
-              ⚠️ 현재 더미 데이터 모드입니다. 승인/거절 기능은 데이터베이스 연동 후 활성화됩니다.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

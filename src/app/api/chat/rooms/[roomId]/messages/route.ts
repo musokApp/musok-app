@@ -23,7 +23,7 @@ export async function GET(
     return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
   }
 
-  const room = findRoomById(roomId);
+  const room = await findRoomById(roomId);
   if (!room) {
     return NextResponse.json({ error: '채팅방을 찾을 수 없습니다' }, { status: 404 });
   }
@@ -32,9 +32,9 @@ export async function GET(
     return NextResponse.json({ error: '접근 권한이 없습니다' }, { status: 403 });
   }
 
-  markMessagesAsRead(roomId, user.userId);
+  await markMessagesAsRead(roomId, user.userId);
 
-  const messages = getMessagesByRoomId(roomId);
+  const messages = await getMessagesByRoomId(roomId);
   return NextResponse.json({ messages });
 }
 
@@ -53,7 +53,7 @@ export async function POST(
     return NextResponse.json({ error: '인증이 필요합니다' }, { status: 401 });
   }
 
-  const room = findRoomById(roomId);
+  const room = await findRoomById(roomId);
   if (!room) {
     return NextResponse.json({ error: '채팅방을 찾을 수 없습니다' }, { status: 404 });
   }
@@ -68,6 +68,6 @@ export async function POST(
     return NextResponse.json({ error: '메시지 내용을 입력해주세요' }, { status: 400 });
   }
 
-  const message = addMessage(roomId, user.userId, body.content.trim());
+  const message = await addMessage(roomId, user.userId, body.content.trim());
   return NextResponse.json({ message }, { status: 201 });
 }
