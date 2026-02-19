@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { getShamanById } from '@/services/shaman.service';
+import { getOrCreateRoom } from '@/services/chat.service';
 import { ShamanWithUser } from '@/types/shaman.types';
 import {
   MapPin, Star, Briefcase, Phone, Mail, ChevronLeft,
@@ -13,9 +15,24 @@ import Link from 'next/link';
 export default function ShamanDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [shaman, setShaman] = useState<ShamanWithUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+
+  const handleChat = async () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    if (!shaman) return;
+    try {
+      const room = await getOrCreateRoom(shaman.id);
+      router.push(`/chat/${room.id}`);
+    } catch (error: any) {
+      alert(error.message || '채팅방 생성에 실패했습니다');
+    }
+  };
 
   useEffect(() => {
     if (params.id) {
@@ -314,7 +331,10 @@ export default function ShamanDetailPage() {
                   예약하기
                 </Link>
 
-                <button className="w-full py-3 bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl text-center hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+                <button
+                  onClick={handleChat}
+                  className="w-full py-3 bg-gray-50 text-gray-700 text-sm font-semibold rounded-xl text-center hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                >
                   <MessageCircle className="w-4 h-4" />
                   문의하기
                 </button>
@@ -335,7 +355,10 @@ export default function ShamanDetailPage() {
               <span className="text-sm text-gray-500">원~</span>
             </div>
           </div>
-          <button className="p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
+          <button
+            onClick={handleChat}
+            className="p-3 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+          >
             <MessageCircle className="w-5 h-5 text-gray-600" />
           </button>
           <Link

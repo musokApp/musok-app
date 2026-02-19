@@ -126,7 +126,7 @@ npm start
   - 예약 목록 및 상태 관리
   - 무속인 측 예약 승인/거절
 - [ ] **Phase 5**: 결제 통합 — 토스페이먼츠, 카카오페이
-- [ ] **Phase 6**: 실시간 채팅 — Supabase Realtime
+- [x] **Phase 6**: 실시간 채팅 ✅ — 1:1 채팅, 폴링 기반 (추후 Supabase Realtime 전환)
 - [ ] **Phase 7**: 후기 시스템 — 별점/텍스트 리뷰, 사진 첨부
 - [ ] **Phase 8**: Capacitor 통합 — iOS/Android 하이브리드 앱
 - [ ] **Phase 9**: 푸시 알림 — FCM/APNs

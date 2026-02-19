@@ -26,7 +26,6 @@ export async function GET(
     return NextResponse.json({ error: '예약을 찾을 수 없습니다' }, { status: 404 });
   }
 
-  // 권한 확인: 고객 본인 또는 해당 무속인만 조회 가능
   if (user.role === 'customer' && booking.customerId !== user.userId) {
     return NextResponse.json({ error: '접근 권한이 없습니다' }, { status: 403 });
   }
@@ -91,7 +90,6 @@ export async function PATCH(
 
   const body: UpdateBookingStatusData = await request.json();
 
-  // 고객: pending/confirmed → cancelled만 가능
   if (user.role === 'customer') {
     if (booking.customerId !== user.userId) {
       return NextResponse.json({ error: '접근 권한이 없습니다' }, { status: 403 });
@@ -104,7 +102,6 @@ export async function PATCH(
     }
   }
 
-  // 무속인: pending → confirmed/rejected, confirmed → completed
   if (user.role === 'shaman') {
     const shaman = findShamanByUserId(user.userId);
     if (!shaman || shaman.id !== booking.shamanId) {
