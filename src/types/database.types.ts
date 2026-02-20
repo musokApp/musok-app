@@ -114,29 +114,39 @@ export type Database = {
       bookings: {
         Row: {
           id: string
-          customer_id: string
+          customer_id: string | null
           shaman_id: string
           date: string
           time_slot: string
+          duration: number
+          party_size: number
           consultation_type: string
           notes: string
           total_price: number
           status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
           rejection_reason: string | null
+          source: 'online' | 'manual'
+          manual_customer_name: string | null
+          manual_customer_phone: string | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          customer_id: string
+          customer_id?: string | null
           shaman_id: string
           date: string
           time_slot: string
+          duration?: number
+          party_size?: number
           consultation_type: string
           notes?: string
           total_price?: number
           status?: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rejected'
           rejection_reason?: string | null
+          source?: 'online' | 'manual'
+          manual_customer_name?: string | null
+          manual_customer_phone?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -288,6 +298,69 @@ export type Database = {
           },
           {
             foreignKeyName: 'reviews_shaman_id_fkey'
+            columns: ['shaman_id']
+            isOneToOne: false
+            referencedRelation: 'shamans'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      shaman_weekly_hours: {
+        Row: {
+          id: string
+          shaman_id: string
+          day_of_week: number
+          is_working: boolean
+          time_slots: string[]
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          shaman_id: string
+          day_of_week: number
+          is_working?: boolean
+          time_slots?: string[]
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          is_working?: boolean
+          time_slots?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'shaman_weekly_hours_shaman_id_fkey'
+            columns: ['shaman_id']
+            isOneToOne: false
+            referencedRelation: 'shamans'
+            referencedColumns: ['id']
+          }
+        ]
+      }
+      shaman_off_days: {
+        Row: {
+          id: string
+          shaman_id: string
+          off_date: string
+          reason: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          shaman_id: string
+          off_date: string
+          reason?: string | null
+          created_at?: string
+        }
+        Update: {
+          off_date?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'shaman_off_days_shaman_id_fkey'
             columns: ['shaman_id']
             isOneToOne: false
             referencedRelation: 'shamans'

@@ -5,8 +5,9 @@ import {
   BookingWithShaman,
   BOOKING_STATUS_LABELS,
   BOOKING_STATUS_COLORS,
+  getDurationLabel,
 } from '@/types/booking.types';
-import { Calendar, Tag, CreditCard, Star } from 'lucide-react';
+import { Calendar, Tag, CreditCard, Star, Users } from 'lucide-react';
 
 interface BookingCardProps {
   booking: BookingWithShaman;
@@ -69,8 +70,15 @@ export default function BookingCard({ booking, onCancel, onReview, hasReview }: 
           <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
           <span className="text-gray-700">
             {formatDate(booking.date)} {booking.timeSlot}
+            {booking.duration > 1 && ` (${getDurationLabel(booking.duration)})`}
           </span>
         </div>
+        {booking.partySize > 1 && (
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            <span className="text-gray-700">{booking.partySize}명</span>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <Tag className="w-4 h-4 text-gray-400 flex-shrink-0" />
           <span className="text-gray-700">{booking.consultationType}</span>

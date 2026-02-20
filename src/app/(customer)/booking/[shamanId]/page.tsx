@@ -7,9 +7,9 @@ import { getShamanById } from '@/services/shaman.service';
 import { createBooking, getAvailableSlots } from '@/services/booking.service';
 import { ShamanWithUser } from '@/types/shaman.types';
 import { Specialty } from '@/types/shaman.types';
-import { TimeSlot } from '@/types/booking.types';
+import { TimeSlot, ALL_TIME_SLOTS, PARTY_SIZE_OPTIONS } from '@/types/booking.types';
 import CalendarPicker from '@/components/booking/CalendarPicker';
-import { ChevronLeft, Star, MapPin, Loader2 } from 'lucide-react';
+import { ChevronLeft, Star, MapPin, Loader2, Users } from 'lucide-react';
 
 export default function BookingPage() {
   const params = useParams();
@@ -23,6 +23,7 @@ export default function BookingPage() {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<TimeSlot | null>(null);
+  const [selectedPartySize, setSelectedPartySize] = useState(1);
   const [selectedType, setSelectedType] = useState<Specialty | null>(null);
   const [notes, setNotes] = useState('');
 
@@ -37,6 +38,7 @@ export default function BookingPage() {
     if (selectedDate && shamanId) {
       fetchSlots(shamanId, selectedDate);
       setSelectedTimeSlot(null);
+      setSelectedPartySize(1);
     }
   }, [selectedDate, shamanId]);
 
@@ -78,6 +80,7 @@ export default function BookingPage() {
         shamanId,
         date: selectedDate,
         timeSlot: selectedTimeSlot,
+        partySize: selectedPartySize,
         consultationType: selectedType,
         notes,
       });
@@ -220,6 +223,55 @@ export default function BookingPage() {
                   </button>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Party Size Selection */}
+        {selectedTimeSlot && (
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 mb-3">
+              <span className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                인원수
+              </span>
+            </h2>
+            <p className="text-xs text-gray-500 mb-3">1명당 1시간씩 소요됩니다</p>
+            <div className="flex flex-wrap gap-2">
+              {PARTY_SIZE_OPTIONS.map((opt) => {
+                // 선택한 시간에서 연속 가용 슬롯 수 계산
+                const startIdx = ALL_TIME_SLOTS.indexOf(selectedTimeSlot);
+                let maxConsecutive = 0;
+                for (let i = startIdx; i < ALL_TIME_SLOTS.length; i++) {
+                  const s = slots.find((sl) => sl.time === ALL_TIME_SLOTS[i]);
+                  if (s && s.available) maxConsecutive++;
+                  else break;
+                }
+                const disabled = opt.value > maxConsecutive;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => !disabled && setSelectedPartySize(opt.value)}
+                    disabled={disabled}
+                    className={`
+                      px-4 py-2.5 rounded-full text-sm font-medium border transition-all
+                      ${selectedPartySize === opt.value
+                        ? 'bg-primary text-white border-primary'
+                        : disabled
+                          ? 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-primary'
+                      }
+                    `}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+            {selectedPartySize > 1 && (
+              <p className="text-xs text-indigo-500 mt-2">
+                {selectedPartySize}명 = {selectedPartySize}시간 소요 ({selectedTimeSlot} ~ {ALL_TIME_SLOTS[ALL_TIME_SLOTS.indexOf(selectedTimeSlot) + selectedPartySize - 1] || '종료'})
+              </p>
             )}
           </div>
         )}

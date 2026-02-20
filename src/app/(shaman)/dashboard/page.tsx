@@ -1,66 +1,185 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { MyPageLayout } from '@/components/layout/MyPageLayout';
-import { Calendar, Users, Star, TrendingUp } from 'lucide-react';
+import DashboardStats from '@/components/dashboard/DashboardStats';
+import DashboardCalendar from '@/components/dashboard/DashboardCalendar';
+import DayBookingList from '@/components/dashboard/DayBookingList';
+import ManualBookingModal from '@/components/dashboard/ManualBookingModal';
+import {
+  getCalendarData,
+  getDayBookings,
+  createManualBooking,
+  updateBookingStatus,
+} from '@/services/booking.service';
+import {
+  BookingWithCustomer,
+  BookingStatus,
+  CalendarDayData,
+  DashboardSummary,
+  CreateManualBookingData,
+  TimeSlot,
+} from '@/types/booking.types';
 
 export default function ShamanDashboardPage() {
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
 
+  // Calendar state
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth() + 1);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [calendarLoading, setCalendarLoading] = useState(true);
+  const [dayData, setDayData] = useState<CalendarDayData[]>([]);
+  const [summary, setSummary] = useState<DashboardSummary>({
+    todayBookings: 0,
+    pendingTotal: 0,
+    thisWeekBookings: 0,
+    thisMonthRevenue: 0,
+  });
+
+  // Day detail state
+  const [dayBookings, setDayBookings] = useState<BookingWithCustomer[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<{ time: string; available: boolean }[]>([]);
+  const [dayLoading, setDayLoading] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  // Manual booking modal
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTimeSlot, setModalTimeSlot] = useState<TimeSlot>('09:00');
+
+  // Auth guard
   useEffect(() => {
-    if (!isLoading && (!user || user.role !== 'shaman')) {
+    if (!authLoading && (!user || user.role !== 'shaman')) {
       router.push('/');
     }
-  }, [user, isLoading, router]);
+  }, [user, authLoading, router]);
 
-  if (isLoading || !user) return null;
+  // Fetch calendar data
+  const fetchCalendar = useCallback(async () => {
+    setCalendarLoading(true);
+    try {
+      const data = await getCalendarData(year, month);
+      setDayData(data.days);
+      setSummary(data.summary);
+    } catch {
+      // silent
+    } finally {
+      setCalendarLoading(false);
+    }
+  }, [year, month]);
+
+  useEffect(() => {
+    if (user?.role === 'shaman') {
+      fetchCalendar();
+    }
+  }, [user, fetchCalendar]);
+
+  // Fetch day bookings
+  const fetchDay = useCallback(async (date: string) => {
+    setDayLoading(true);
+    try {
+      const data = await getDayBookings(date);
+      setDayBookings(data.bookings);
+      setAvailableSlots(data.availableSlots);
+    } catch {
+      // silent
+    } finally {
+      setDayLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDay(selectedDate);
+    }
+  }, [selectedDate, fetchDay]);
+
+  // Handlers
+  const handleMonthChange = (y: number, m: number) => {
+    setYear(y);
+    setMonth(m);
+    setSelectedDate(null);
+    setDayBookings([]);
+  };
+
+  const handleSelectDate = (date: string) => {
+    setSelectedDate(date);
+  };
+
+  const handleStatusChange = async (bookingId: string, status: BookingStatus) => {
+    setUpdatingId(bookingId);
+    try {
+      await updateBookingStatus(bookingId, { status });
+      await Promise.all([fetchCalendar(), selectedDate ? fetchDay(selectedDate) : Promise.resolve()]);
+    } catch {
+      // silent
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleAddManual = (timeSlot: TimeSlot) => {
+    setModalTimeSlot(timeSlot);
+    setModalOpen(true);
+  };
+
+  const handleManualSubmit = async (data: CreateManualBookingData) => {
+    await createManualBooking(data);
+    await Promise.all([fetchCalendar(), selectedDate ? fetchDay(selectedDate) : Promise.resolve()]);
+  };
+
+  if (authLoading || !user) return null;
 
   return (
     <MyPageLayout>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">대시보드</h1>
-      <p className="text-sm text-gray-500 mb-6">오늘의 현황을 확인하세요</p>
+      <p className="text-sm text-gray-500 mb-5">예약 현황을 한눈에 확인하세요</p>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-8">
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-xs text-gray-500">오늘 예약</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">0</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="w-4 h-4 text-blue-500" />
-            <span className="text-xs text-gray-500">대기 중</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">0</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Star className="w-4 h-4 text-amber-500" />
-            <span className="text-xs text-gray-500">평균 평점</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">-</p>
-        </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <span className="text-xs text-gray-500">이번 달 수익</span>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">₩0</p>
-        </div>
-      </div>
+      <DashboardStats summary={summary} loading={calendarLoading} />
 
-      {/* Notice */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-        <p className="text-sm text-amber-800">
-          대시보드 데이터는 데이터베이스 연동 후 실시간으로 업데이트됩니다.
-        </p>
-      </div>
+      <DashboardCalendar
+        year={year}
+        month={month}
+        onMonthChange={handleMonthChange}
+        selectedDate={selectedDate}
+        onSelectDate={handleSelectDate}
+        dayData={dayData}
+      />
+
+      {selectedDate && (
+        dayLoading ? (
+          <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-14 bg-gray-50 rounded-xl animate-pulse" />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <DayBookingList
+            date={selectedDate}
+            bookings={dayBookings}
+            availableSlots={availableSlots}
+            onStatusChange={handleStatusChange}
+            onAddManual={handleAddManual}
+            updatingId={updatingId}
+          />
+        )
+      )}
+
+      {selectedDate && (
+        <ManualBookingModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          date={selectedDate}
+          timeSlot={modalTimeSlot}
+          onSubmit={handleManualSubmit}
+        />
+      )}
     </MyPageLayout>
   );
 }

@@ -1,9 +1,13 @@
 import {
+  Booking,
   BookingWithShaman,
   BookingWithCustomer,
   BookingStatus,
   CreateBookingData,
+  CreateManualBookingData,
   UpdateBookingStatusData,
+  CalendarDayData,
+  DashboardSummary,
 } from '@/types/booking.types';
 
 export async function getMyBookings(status?: BookingStatus): Promise<BookingWithShaman[]> {
@@ -81,4 +85,39 @@ export async function getAvailableSlots(
   }
   const data = await response.json();
   return data.slots;
+}
+
+// ===== 캘린더 대시보드용 =====
+
+export async function getCalendarData(
+  year: number,
+  month: number
+): Promise<{ days: CalendarDayData[]; summary: DashboardSummary }> {
+  const params = new URLSearchParams({ year: String(year), month: String(month) });
+  const response = await fetch(`/api/shamans/me/bookings/calendar?${params}`);
+  if (!response.ok) throw new Error('캘린더 데이터를 불러오는데 실패했습니다');
+  return response.json();
+}
+
+export async function getDayBookings(
+  date: string
+): Promise<{ bookings: BookingWithCustomer[]; availableSlots: { time: string; available: boolean }[] }> {
+  const params = new URLSearchParams({ date });
+  const response = await fetch(`/api/shamans/me/bookings/day?${params}`);
+  if (!response.ok) throw new Error('예약 목록을 불러오는데 실패했습니다');
+  return response.json();
+}
+
+export async function createManualBooking(data: CreateManualBookingData): Promise<Booking> {
+  const response = await fetch('/api/shamans/me/bookings/manual', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || '수동 예약 생성에 실패했습니다');
+  }
+  const result = await response.json();
+  return result.booking;
 }

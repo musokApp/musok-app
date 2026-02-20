@@ -7,7 +7,7 @@ import {
 } from '@/lib/data/bookings-data';
 import { findShamanById, findShamanByUserId } from '@/lib/data/shamans-data';
 import { findUserById } from '@/lib/auth/users-data';
-import { BookingFilters, BookingStatus, CreateBookingData } from '@/types/booking.types';
+import { BookingFilters, BookingStatus, CreateBookingData, getOccupiedSlots } from '@/types/booking.types';
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
@@ -67,18 +67,19 @@ export async function GET(request: NextRequest) {
 
     const bookingsWithCustomer = await Promise.all(
       bookings.map(async (booking) => {
-        const customerRow = await findUserById(booking.customerId);
-        return {
-          ...booking,
-          customer: customerRow
-            ? {
-                id: customerRow.id,
-                fullName: customerRow.full_name,
-                email: customerRow.email,
-                phone: customerRow.phone,
-              }
-            : null,
-        };
+        let customer = null;
+        if (booking.customerId) {
+          const customerRow = await findUserById(booking.customerId);
+          if (customerRow) {
+            customer = {
+              id: customerRow.id,
+              fullName: customerRow.full_name,
+              email: customerRow.email,
+              phone: customerRow.phone,
+            };
+          }
+        }
+        return { ...booking, customer };
       })
     );
 
@@ -112,9 +113,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '과거 날짜는 예약할 수 없습니다' }, { status: 400 });
   }
 
+  const partySize = body.partySize || 1;
+  const duration = partySize; // 1명당 1시간
+  const occupiedSlots = getOccupiedSlots(body.timeSlot, duration);
   const bookedSlots = await getBookedTimeSlots(body.shamanId, body.date);
-  if (bookedSlots.includes(body.timeSlot)) {
-    return NextResponse.json({ error: '이미 예약된 시간대입니다' }, { status: 400 });
+  const hasConflict = occupiedSlots.some((s) => bookedSlots.includes(s));
+  if (hasConflict) {
+    return NextResponse.json({ error: '이미 예약된 시간대가 포함되어 있습니다' }, { status: 400 });
   }
 
   const booking = await createBooking({
@@ -122,10 +127,13 @@ export async function POST(request: NextRequest) {
     shamanId: body.shamanId,
     date: body.date,
     timeSlot: body.timeSlot,
+    duration,
+    partySize,
     consultationType: body.consultationType,
     notes: body.notes || '',
     totalPrice: shaman.basePrice,
     status: 'pending',
+    source: 'online',
   });
 
   return NextResponse.json({ booking }, { status: 201 });

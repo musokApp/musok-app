@@ -4,8 +4,9 @@ import {
   BookingWithCustomer,
   BOOKING_STATUS_LABELS,
   BOOKING_STATUS_COLORS,
+  getDurationLabel,
 } from '@/types/booking.types';
-import { Calendar, Tag, CreditCard } from 'lucide-react';
+import { Calendar, Tag, CreditCard, Phone, Users } from 'lucide-react';
 
 interface ShamanBookingCardProps {
   booking: BookingWithCustomer;
@@ -31,31 +32,42 @@ export default function ShamanBookingCard({
   onComplete,
 }: ShamanBookingCardProps) {
   const { customer } = booking;
+  const isManual = booking.source === 'manual';
+  const displayName = isManual ? booking.manualCustomerName || '고객' : customer?.fullName || '알 수 없음';
+  const displayContact = isManual ? booking.manualCustomerPhone : customer?.phone || customer?.email;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
       {/* Status + Date */}
       <div className="flex items-center justify-between">
-        <span
-          className={`px-2.5 py-0.5 text-xs font-bold rounded-full ${BOOKING_STATUS_COLORS[booking.status]}`}
-        >
-          {BOOKING_STATUS_LABELS[booking.status]}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`px-2.5 py-0.5 text-xs font-bold rounded-full ${BOOKING_STATUS_COLORS[booking.status]}`}
+          >
+            {BOOKING_STATUS_LABELS[booking.status]}
+          </span>
+          {isManual && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-50 text-orange-600 flex items-center gap-0.5">
+              <Phone className="w-3 h-3" />
+              전화
+            </span>
+          )}
+        </div>
         <span className="text-xs text-gray-400">{formatCreatedAt(booking.createdAt)}</span>
       </div>
 
       {/* Customer Info */}
-      {customer && (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-            {customer.fullName[0]}
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900 text-sm">{customer.fullName}</h3>
-            <p className="text-xs text-gray-500">{customer.phone || customer.email}</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${isManual ? 'bg-orange-50 text-orange-600' : 'bg-primary/10 text-primary'}`}>
+          {isManual ? <Phone className="w-4 h-4" /> : displayName[0]}
         </div>
-      )}
+        <div>
+          <h3 className="font-bold text-gray-900 text-sm">{displayName}</h3>
+          {displayContact && (
+            <p className="text-xs text-gray-500">{displayContact}</p>
+          )}
+        </div>
+      </div>
 
       {/* Booking Details */}
       <div className="bg-gray-50 rounded-xl p-3 space-y-2 text-sm">
@@ -66,8 +78,20 @@ export default function ShamanBookingCard({
           </div>
           <span className="font-medium text-gray-900">
             {formatDate(booking.date)} {booking.timeSlot}
+            {booking.duration > 1 && (
+              <span className="text-xs text-indigo-500 ml-1">({getDurationLabel(booking.duration)})</span>
+            )}
           </span>
         </div>
+        {booking.partySize > 1 && (
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-gray-400" />
+              <span className="text-gray-500">인원</span>
+            </div>
+            <span className="font-medium text-gray-900">{booking.partySize}명</span>
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Tag className="w-4 h-4 text-gray-400" />

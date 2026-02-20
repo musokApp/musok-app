@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/auth/jwt';
-import { getBookedTimeSlots } from '@/lib/data/bookings-data';
-import { ALL_TIME_SLOTS } from '@/types/booking.types';
+import { getAvailableSlotsForDate } from '@/lib/data/schedule-data';
 
 export async function GET(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
@@ -23,12 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'shamanId와 date 파라미터가 필요합니다' }, { status: 400 });
   }
 
-  const bookedSlots = await getBookedTimeSlots(shamanId, date);
-
-  const slots = ALL_TIME_SLOTS.map((time) => ({
-    time,
-    available: !bookedSlots.includes(time),
-  }));
+  const slots = await getAvailableSlotsForDate(shamanId, date);
 
   return NextResponse.json({ slots });
 }

@@ -38,7 +38,7 @@ export async function GET(
   }
 
   const shaman = await findShamanById(booking.shamanId);
-  const customerRow = await findUserById(booking.customerId);
+  const customerRow = booking.customerId ? await findUserById(booking.customerId) : null;
 
   return NextResponse.json({
     booking: {
