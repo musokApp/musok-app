@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { MyPageLayout } from '@/components/layout/MyPageLayout';
 import { ShamanProfile, Specialty } from '@/types/shaman.types';
 import { CheckCircle, Clock, User, XCircle } from 'lucide-react';
+import ImageUploader from '@/components/upload/ImageUploader';
 
 const REGIONS = ['서울특별시', '부산광역시', '대구광역시', '인천광역시', '광주광역시', '대전광역시', '울산광역시'];
 const SPECIALTIES: Specialty[] = ['굿', '점술', '사주', '타로', '궁합', '작명', '풍수', '해몽'];
@@ -149,6 +150,7 @@ function ShamanProfileContent() {
     district: '',
     address: '',
     basePrice: '',
+    images: [] as string[],
   });
 
   useEffect(() => {
@@ -172,6 +174,7 @@ function ShamanProfileContent() {
             district: data.shaman.district,
             address: data.shaman.address,
             basePrice: data.shaman.basePrice.toString(),
+            images: data.shaman.images || [],
           });
         }
       }
@@ -284,6 +287,14 @@ function ShamanProfileContent() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 이미지 업로드 */}
+        <ImageUploader
+          images={formData.images}
+          onChange={(urls) => setFormData({ ...formData, images: urls })}
+        />
+
+        <div className="h-px bg-gray-100" />
+
         <h2 className="text-base font-bold text-gray-900">기본 정보</h2>
 
         <div>

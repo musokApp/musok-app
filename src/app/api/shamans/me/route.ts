@@ -57,6 +57,7 @@ export async function PATCH(request: NextRequest) {
       district: body.district,
       address: body.address,
       basePrice: parseInt(body.basePrice),
+      images: body.images || [],
     });
     if (!created) {
       return NextResponse.json({ error: '프로필 등록에 실패했습니다' }, { status: 500 });

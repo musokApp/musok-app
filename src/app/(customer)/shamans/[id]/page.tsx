@@ -12,8 +12,10 @@ import ReviewCard from '@/components/reviews/ReviewCard';
 import StarRating from '@/components/reviews/StarRating';
 import {
   MapPin, Star, Briefcase, Phone, Mail, ChevronLeft,
-  Clock, Shield, Share2, Heart, MessageCircle, Calendar
+  Clock, Shield, Share2, Heart, MessageCircle, Calendar,
+  Copy, Navigation, ExternalLink
 } from 'lucide-react';
+import KakaoMap from '@/components/maps/KakaoMap';
 import Link from 'next/link';
 
 export default function ShamanDetailPage() {
@@ -252,8 +254,43 @@ export default function ShamanDetailPage() {
                   <p className="text-xs text-gray-500 mt-0.5">{shaman.region} {shaman.district}</p>
                 </div>
               </div>
-              <div className="h-48 bg-gray-100 rounded-2xl flex items-center justify-center text-sm text-gray-400">
-                지도 (추후 카카오맵 연동 예정)
+              <KakaoMap
+                latitude={shaman.latitude}
+                longitude={shaman.longitude}
+                markerTitle={shaman.businessName}
+                className="h-48 rounded-2xl"
+              />
+
+              {/* Location Action Buttons */}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(shaman.address);
+                    alert('주소가 복사되었습니다');
+                  }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-xl hover:bg-gray-100 transition-colors"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  주소 복사
+                </button>
+                <a
+                  href={`https://map.kakao.com/link/map/${encodeURIComponent(shaman.businessName)},${shaman.latitude},${shaman.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-gray-50 text-gray-600 text-xs font-medium rounded-xl hover:bg-gray-100 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  카카오맵에서 보기
+                </a>
+                <a
+                  href={`https://map.kakao.com/link/to/${encodeURIComponent(shaman.businessName)},${shaman.latitude},${shaman.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#FEE500] text-gray-900 text-xs font-medium rounded-xl hover:bg-[#FDD800] transition-colors"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  길찾기
+                </a>
               </div>
             </div>
 

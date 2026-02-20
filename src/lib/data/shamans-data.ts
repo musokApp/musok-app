@@ -87,6 +87,7 @@ export async function updateShamanProfile(
     district?: string;
     address?: string;
     basePrice?: number;
+    images?: string[];
   }
 ): Promise<ShamanProfile | undefined> {
   const supabase = createClient();
@@ -99,6 +100,7 @@ export async function updateShamanProfile(
   if (updates.district !== undefined) updateData.district = updates.district;
   if (updates.address !== undefined) updateData.address = updates.address;
   if (updates.basePrice !== undefined) updateData.base_price = updates.basePrice;
+  if (updates.images !== undefined) updateData.images = updates.images;
 
   const { data, error } = await supabase
     .from('shamans')
@@ -122,6 +124,7 @@ export async function createShamanProfile(data: {
   district: string;
   address: string;
   basePrice: number;
+  images?: string[];
 }): Promise<ShamanProfile | undefined> {
   const supabase = createClient();
   const { data: row, error } = await supabase
@@ -136,6 +139,7 @@ export async function createShamanProfile(data: {
       district: data.district,
       address: data.address,
       base_price: data.basePrice,
+      images: data.images || [],
       status: 'pending',
     })
     .select()
